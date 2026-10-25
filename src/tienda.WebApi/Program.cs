@@ -7,6 +7,7 @@ using tienda.Application;
 using tienda.Infrastructure;
 using tienda.Infrastructure.Persistence;
 using tienda.WebApi.Middleware;
+using tienda.Application.Contracts.Authentication;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -79,6 +80,14 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddAuthorization();
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await db.Database.MigrateAsync(); // aplica migraciones pendientes al arrancar
+    var hasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher>();
+    await DbSeeder.SeedAdminAsync(db, hasher, app.Configuration);
+}
 
 // Middleware de manejo de excepciones (debe ir antes del routing)
 app.UseMiddleware<ExceptionHandlingMiddleware>();

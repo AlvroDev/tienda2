@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "C:\\tienda\\src\\tienda.WebApi\\tienda.WebApi.csproj": {}
+    "D:\\tienda2\\src\\tienda.WebApi\\tienda.WebApi.csproj": {}
   },
   "projects": {
-    "C:\\tienda\\src\\tienda.Application\\tienda.Application.csproj": {
+    "D:\\tienda2\\src\\tienda.Application\\tienda.Application.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\tienda\\src\\tienda.Application\\tienda.Application.csproj",
+        "projectUniqueName": "D:\\tienda2\\src\\tienda.Application\\tienda.Application.csproj",
         "projectName": "tienda.Application",
-        "projectPath": "C:\\tienda\\src\\tienda.Application\\tienda.Application.csproj",
-        "packagesPath": "C:\\Users\\User\\.nuget\\packages\\",
-        "outputPath": "C:\\tienda\\src\\tienda.Application\\obj\\",
+        "projectPath": "D:\\tienda2\\src\\tienda.Application\\tienda.Application.csproj",
+        "packagesPath": "C:\\Users\\seren\\.nuget\\packages\\",
+        "outputPath": "D:\\tienda2\\src\\tienda.Application\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\User\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "C:\\Users\\seren\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
@@ -26,8 +26,8 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "C:\\tienda\\src\\tienda.Domain\\tienda.Domain.csproj": {
-                "projectPath": "C:\\tienda\\src\\tienda.Domain\\tienda.Domain.csproj"
+              "D:\\tienda2\\src\\tienda.Domain\\tienda.Domain.csproj": {
+                "projectPath": "D:\\tienda2\\src\\tienda.Domain\\tienda.Domain.csproj"
               }
             }
           }
@@ -76,21 +76,21 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.419/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.426/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
-    "C:\\tienda\\src\\tienda.Domain\\tienda.Domain.csproj": {
+    "D:\\tienda2\\src\\tienda.Domain\\tienda.Domain.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\tienda\\src\\tienda.Domain\\tienda.Domain.csproj",
+        "projectUniqueName": "D:\\tienda2\\src\\tienda.Domain\\tienda.Domain.csproj",
         "projectName": "tienda.Domain",
-        "projectPath": "C:\\tienda\\src\\tienda.Domain\\tienda.Domain.csproj",
-        "packagesPath": "C:\\Users\\User\\.nuget\\packages\\",
-        "outputPath": "C:\\tienda\\src\\tienda.Domain\\obj\\",
+        "projectPath": "D:\\tienda2\\src\\tienda.Domain\\tienda.Domain.csproj",
+        "packagesPath": "C:\\Users\\seren\\.nuget\\packages\\",
+        "outputPath": "D:\\tienda2\\src\\tienda.Domain\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\User\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "C:\\Users\\seren\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
@@ -134,21 +134,21 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.419/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.426/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
-    "C:\\tienda\\src\\tienda.Infrastructure\\tienda.Infrastructure.csproj": {
+    "D:\\tienda2\\src\\tienda.Infrastructure\\tienda.Infrastructure.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\tienda\\src\\tienda.Infrastructure\\tienda.Infrastructure.csproj",
+        "projectUniqueName": "D:\\tienda2\\src\\tienda.Infrastructure\\tienda.Infrastructure.csproj",
         "projectName": "tienda.Infrastructure",
-        "projectPath": "C:\\tienda\\src\\tienda.Infrastructure\\tienda.Infrastructure.csproj",
-        "packagesPath": "C:\\Users\\User\\.nuget\\packages\\",
-        "outputPath": "C:\\tienda\\src\\tienda.Infrastructure\\obj\\",
+        "projectPath": "D:\\tienda2\\src\\tienda.Infrastructure\\tienda.Infrastructure.csproj",
+        "packagesPath": "C:\\Users\\seren\\.nuget\\packages\\",
+        "outputPath": "D:\\tienda2\\src\\tienda.Infrastructure\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\User\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "C:\\Users\\seren\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
@@ -160,11 +160,11 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "C:\\tienda\\src\\tienda.Application\\tienda.Application.csproj": {
-                "projectPath": "C:\\tienda\\src\\tienda.Application\\tienda.Application.csproj"
+              "D:\\tienda2\\src\\tienda.Application\\tienda.Application.csproj": {
+                "projectPath": "D:\\tienda2\\src\\tienda.Application\\tienda.Application.csproj"
               },
-              "C:\\tienda\\src\\tienda.Domain\\tienda.Domain.csproj": {
-                "projectPath": "C:\\tienda\\src\\tienda.Domain\\tienda.Domain.csproj"
+              "D:\\tienda2\\src\\tienda.Domain\\tienda.Domain.csproj": {
+                "projectPath": "D:\\tienda2\\src\\tienda.Domain\\tienda.Domain.csproj"
               }
             }
           }
@@ -237,21 +237,21 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.419/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.426/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
-    "C:\\tienda\\src\\tienda.WebApi\\tienda.WebApi.csproj": {
+    "D:\\tienda2\\src\\tienda.WebApi\\tienda.WebApi.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\tienda\\src\\tienda.WebApi\\tienda.WebApi.csproj",
+        "projectUniqueName": "D:\\tienda2\\src\\tienda.WebApi\\tienda.WebApi.csproj",
         "projectName": "tienda.WebApi",
-        "projectPath": "C:\\tienda\\src\\tienda.WebApi\\tienda.WebApi.csproj",
-        "packagesPath": "C:\\Users\\User\\.nuget\\packages\\",
-        "outputPath": "C:\\tienda\\src\\tienda.WebApi\\obj\\",
+        "projectPath": "D:\\tienda2\\src\\tienda.WebApi\\tienda.WebApi.csproj",
+        "packagesPath": "C:\\Users\\seren\\.nuget\\packages\\",
+        "outputPath": "D:\\tienda2\\src\\tienda.WebApi\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\User\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "C:\\Users\\seren\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
@@ -263,11 +263,11 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "C:\\tienda\\src\\tienda.Application\\tienda.Application.csproj": {
-                "projectPath": "C:\\tienda\\src\\tienda.Application\\tienda.Application.csproj"
+              "D:\\tienda2\\src\\tienda.Application\\tienda.Application.csproj": {
+                "projectPath": "D:\\tienda2\\src\\tienda.Application\\tienda.Application.csproj"
               },
-              "C:\\tienda\\src\\tienda.Infrastructure\\tienda.Infrastructure.csproj": {
-                "projectPath": "C:\\tienda\\src\\tienda.Infrastructure\\tienda.Infrastructure.csproj"
+              "D:\\tienda2\\src\\tienda.Infrastructure\\tienda.Infrastructure.csproj": {
+                "projectPath": "D:\\tienda2\\src\\tienda.Infrastructure\\tienda.Infrastructure.csproj"
               }
             }
           }
@@ -325,7 +325,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.419/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.426/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

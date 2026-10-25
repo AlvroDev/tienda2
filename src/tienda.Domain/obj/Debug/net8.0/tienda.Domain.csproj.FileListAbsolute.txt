@@ -10,3 +10,15 @@ C:\tienda\src\tienda.Domain\obj\Debug\net8.0\refint\tienda.Domain.dll
 C:\tienda\src\tienda.Domain\obj\Debug\net8.0\tienda.Domain.pdb
 C:\tienda\src\tienda.Domain\obj\Debug\net8.0\ref\tienda.Domain.dll
 C:\tienda\src\tienda.Domain\obj\Debug\net8.0\tienda.Domain.sourcelink.json
+D:\tienda2\src\tienda.Domain\bin\Debug\net8.0\tienda.Domain.deps.json
+D:\tienda2\src\tienda.Domain\bin\Debug\net8.0\tienda.Domain.dll
+D:\tienda2\src\tienda.Domain\bin\Debug\net8.0\tienda.Domain.pdb
+D:\tienda2\src\tienda.Domain\obj\Debug\net8.0\tienda.Domain.GeneratedMSBuildEditorConfig.editorconfig
+D:\tienda2\src\tienda.Domain\obj\Debug\net8.0\tienda.Domain.AssemblyInfoInputs.cache
+D:\tienda2\src\tienda.Domain\obj\Debug\net8.0\tienda.Domain.AssemblyInfo.cs
+D:\tienda2\src\tienda.Domain\obj\Debug\net8.0\tienda.Domain.csproj.CoreCompileInputs.cache
+D:\tienda2\src\tienda.Domain\obj\Debug\net8.0\tienda.Domain.sourcelink.json
+D:\tienda2\src\tienda.Domain\obj\Debug\net8.0\tienda.Domain.dll
+D:\tienda2\src\tienda.Domain\obj\Debug\net8.0\refint\tienda.Domain.dll
+D:\tienda2\src\tienda.Domain\obj\Debug\net8.0\tienda.Domain.pdb
+D:\tienda2\src\tienda.Domain\obj\Debug\net8.0\ref\tienda.Domain.dll
