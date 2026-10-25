@@ -42,9 +42,6 @@ public class ProductosController : ControllerBase
         var query = new ObtenerProductoPorIdQuery(id);
         var producto = await _mediator.Send(query, ct);
 
-        if (producto is null)
-            return NotFound(new { error = $"Producto con Id '{id}' no encontrado." });
-
         return Ok(producto);
     }
 

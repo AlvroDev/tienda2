@@ -1,6 +1,7 @@
 using MediatR;
 using tienda.Application.Contracts.Persistence;
 using tienda.Application.Contracts.Authentication;
+using tienda.Application.Common.Exceptions;
 
 namespace tienda.Application.Features.Authentication.Commands.Login;
 
@@ -22,16 +23,16 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, AuthResponse>
         // Buscar usuario por email
         var user = await _userRepository.GetByEmailAsync(request.Email);
         if (user == null)
-            throw new InvalidOperationException($"Email o contraseña incorrectos.");
+            throw new InvalidCredentialsException();
 
         // Verificar contraseña
         var isPasswordValid = _passwordHasher.VerifyPassword(request.Password, user.PasswordHash);
         if (!isPasswordValid)
-            throw new InvalidOperationException($"Email o contraseña incorrectos.");
+            throw new InvalidCredentialsException();
 
         // Verificar que el usuario esté activo
         if (!user.IsActive)
-            throw new InvalidOperationException("El usuario está desactivado.");
+            throw new InvalidCredentialsException("El usuario está desactivado.");
 
         // Generar JWT
         var expiresAt = DateTime.UtcNow.AddMinutes(60);

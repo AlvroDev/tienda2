@@ -79,6 +79,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
+
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
@@ -90,7 +93,7 @@ using (var scope = app.Services.CreateScope())
 }
 
 // Middleware de manejo de excepciones (debe ir antes del routing)
-app.UseMiddleware<ExceptionHandlingMiddleware>();
+app.UseExceptionHandler(); // PRIMERO del pipeline: envuelve a todos los demás
 
 if (app.Environment.IsDevelopment())
 {

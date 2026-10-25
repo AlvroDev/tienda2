@@ -4,6 +4,7 @@ using tienda.Application.Contracts.Authentication;
 using tienda.Domain.Entities;
 using tienda.Domain.ValueObjects;
 using tienda.Domain.Enums;
+using tienda.Application.Common.Exceptions;
 
 namespace tienda.Application.Features.Authentication.Commands.Register;
 
@@ -25,7 +26,7 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, AuthRespo
         // Verificar que el email no exista
         var existingUser = await _userRepository.GetByEmailAsync(request.Email);
         if (existingUser != null)
-            throw new InvalidOperationException($"El email {request.Email} ya está registrado.");
+            throw new ConflictException($"El email {request.Email} ya está registrado.");
 
         // Hashear contraseña
         var passwordHash = _passwordHasher.HashPassword(request.Password);
