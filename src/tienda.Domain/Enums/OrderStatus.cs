@@ -1,11 +1,8 @@
-// Enums/OrderStatus.cs 
-namespace tienda.Domain.Enums; 
- 
-public enum OrderStatus 
+namespace tienda.Domain.Enums;
+
+public enum OrderStatus
 {
-    Pending = 1, 
-    Confirmed = 2, 
-    Shipped = 3, 
-    Delivered = 4, 
-    Cancelled = 5 
+    Pending = 1,          // Creada, esperando el pago
+    Paid = 2,             // Pago aprobado
+    PaymentRejected = 3   // Pago rechazado (se devuelve el stock)
 }

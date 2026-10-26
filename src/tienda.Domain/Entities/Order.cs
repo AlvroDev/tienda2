@@ -1,44 +1,74 @@
-// Entities/Order.cs
-using tienda.Domain.ValueObjects;
 using tienda.Domain.Enums;
 using tienda.Domain.Exceptions;
+using tienda.Domain.ValueObjects;
 
 namespace tienda.Domain.Entities;
 
 public class Order : BaseEntity
 {
     public Guid UserId { get; private set; }
-    public DateTime OrderDate { get; private set; }
-    public Money TotalAmount { get; private set; } = null!;
+    public DateTime CreatedAt { get; private set; }
     public OrderStatus Status { get; private set; }
-    
-    // Relación: Una orden tiene muchos ítems (simplificado para el ejemplo)
-    private readonly List<Product> _products = new();
-    public IReadOnlyCollection<Product> Products => _products.AsReadOnly();
+    public Money Total { get; private set; } = null!;
+    public string? PaymentTransactionId { get; private set; }
 
-    private Order() { }
+    private readonly List<OrderItem> _items = new();
+    public IReadOnlyCollection<OrderItem> Items => _items.AsReadOnly();
 
-    public static Order Create(Guid userId, Money initialAmount)
+    private Order() { } // para EF Core
+
+    public static Order Create(Guid userId)
     {
+        if (userId == Guid.Empty)
+            throw new DomainException("La orden debe pertenecer a un usuario.");
+
         return new Order
         {
             UserId = userId,
-            OrderDate = DateTime.UtcNow,
-            TotalAmount = initialAmount,
-            Status = OrderStatus.Pending
+            CreatedAt = DateTime.UtcNow,
+            Status = OrderStatus.Pending,
+            Total = Money.Create(0)
         };
     }
 
-    public void CompleteOrder()
+    public void AddItem(Product product, int quantity)
     {
-        if (Status != OrderStatus.Pending)
-            throw new DomainException("Solo se pueden completar órdenes pendientes.");
+        EnsurePending();
 
-        Status = OrderStatus.Confirmed;
+        if (!product.IsActive)
+            throw new DomainException($"El producto '{product.Name}' no está disponible.");
+
+        if (_items.Any(i => i.ProductId == product.Id))
+            throw new DomainException($"El producto '{product.Name}' ya está en la orden.");
+
+        // Regla de negocio en el dominio: valida cantidad > 0 y stock suficiente
+        product.RemoveStock(quantity);
+
+        var item = new OrderItem(Id, product, quantity);
+        _items.Add(item);
+        Total = Total.Add(Money.Create(item.Subtotal));
     }
 
-    public void CancelOrder()
+    public void MarkAsPaid(string transactionId)
     {
-        Status = OrderStatus.Cancelled;
+        EnsurePending();
+
+        if (string.IsNullOrWhiteSpace(transactionId))
+            throw new DomainException("Un pago aprobado debe tener número de transacción.");
+
+        Status = OrderStatus.Paid;
+        PaymentTransactionId = transactionId;
+    }
+
+    public void RejectPayment()
+    {
+        EnsurePending();
+        Status = OrderStatus.PaymentRejected;
+    }
+
+    private void EnsurePending()
+    {
+        if (Status != OrderStatus.Pending)
+            throw new DomainException($"La orden ya fue procesada (estado: {Status}).");
     }
 }
