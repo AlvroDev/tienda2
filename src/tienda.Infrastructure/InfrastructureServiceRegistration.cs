@@ -27,6 +27,7 @@ public static class InfrastructureServiceRegistration
         services.AddSingleton(jwtSettings);
         services.AddScoped<IAuthService, JwtAuthService>();
         services.AddScoped<IPasswordHasher, BcryptPasswordHasher>();
+        services.AddScoped<IOrderRepository, OrderRepository>();
 
         return services;
     }
