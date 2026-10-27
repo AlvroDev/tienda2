@@ -46,6 +46,7 @@ public class GlobalExceptionHandler : IExceptionHandler
             DomainException ex => (StatusCodes.Status422UnprocessableEntity, ex.Message),
             InvalidCredentialsException ex => (StatusCodes.Status401Unauthorized, ex.Message),
             ConflictException ex => (StatusCodes.Status409Conflict, ex.Message),
+            ServiceUnavailableException ex => (StatusCodes.Status503ServiceUnavailable, ex.Message),
             _ => (StatusCodes.Status500InternalServerError, "Ocurrió un error inesperado.")
         };
 

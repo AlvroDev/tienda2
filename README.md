@@ -1,227 +1,262 @@
-# Tienda API
+# Tienda — Sistema distribuido: e-commerce + PaymentService
 
-API REST para gestión de productos con autenticación JWT, construida con .NET 8 siguiendo los principios de Clean Architecture y CQRS.
+Trabajo Final Integrador de **Backend (Optativa II)** — UCCuyo.
+
+Dos servicios .NET 8 independientes que se comunican por HTTP:
+
+- **E-commerce** (`tienda`): productos, usuarios y órdenes, con autenticación JWT y roles.
+- **PaymentService**: aprueba o rechaza el pago de una orden según una regla de negocio.
+
+Cuando un cliente **confirma una orden**, el e-commerce le pide el pago al PaymentService mediante `HttpClient` y, según la respuesta, marca la orden como `Paid` o `PaymentRejected`.
+
+**Opción elegida:** Opción 1 — PaymentService.
+
+---
+
+## Estructura del repositorio
+
+Un solo repositorio con **dos carpetas**, cada una con su propia solución:
+
+```
+tienda2/
+├── tienda.sln                       ← E-commerce
+├── src/
+│   ├── tienda.Domain/
+│   ├── tienda.Application/
+│   ├── tienda.Infrastructure/
+│   └── tienda.WebApi/
+└── PaymentService/
+    ├── PaymentService.sln           ← Segundo servicio (independiente)
+    └── src/
+        ├── PaymentService.Domain/
+        ├── PaymentService.Application/
+        ├── PaymentService.Infrastructure/
+        └── PaymentService.Api/
+```
 
 ---
 
 ## Requisitos previos
 
 - [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
-- [Entity Framework Core CLI](https://learn.microsoft.com/ef/core/cli/dotnet)
-
-Instalar EF Core CLI (una sola vez):
-
-```bash
-dotnet tool install --global dotnet-ef
-```
+- (Opcional, solo para crear migraciones nuevas) EF Core CLI:
+  ```bash
+  dotnet tool install --global dotnet-ef --version 8.0.11
+  ```
 
 ---
 
-## Pasos para ejecutar el proyecto
+## Cómo levantar los dos servicios
 
-### 1. Clonar el repositorio
+Se necesitan **dos terminales**, una por servicio. Conviene levantar primero el PaymentService.
 
-```bash
-git clone <URL_DEL_REPOSITORIO>
-cd tienda
-```
-
-### 2. Restaurar dependencias
+**Terminal 1 — PaymentService** (puerto **5290**):
 
 ```bash
-dotnet restore tienda.sln
+cd PaymentService
+dotnet run --project src/PaymentService.Api --launch-profile http
 ```
 
-### 3. Aplicar la migración (crea la base de datos SQLite)
+Swagger: http://localhost:5290/swagger
+
+**Terminal 2 — E-commerce** (puerto **5284**):
 
 ```bash
-dotnet ef database update \
-  --project src/tienda.Infrastructure \
-  --startup-project src/tienda.WebApi
+dotnet run --project src/tienda.WebApi --launch-profile http
 ```
 
-Esto crea el archivo `tienda.db` con las tablas `Users` y `Products`.
+Swagger: http://localhost:5284/swagger
 
-### 4. Ejecutar el proyecto
+### Base de datos
 
-```bash
-dotnet run --project src/tienda.WebApi
+El e-commerce usa **SQLite**. El archivo `tienda.db` **no se versiona**: se crea solo al arrancar, porque `Program.cs` ejecuta `Database.MigrateAsync()`, que aplica todas las migraciones pendientes. No hace falta correr `dotnet ef database update` a mano.
+
+### Puertos y URLs
+
+| Servicio | URL | Dónde se configura |
+|---|---|---|
+| E-commerce | http://localhost:5284 | `src/tienda.WebApi/Properties/launchSettings.json` |
+| PaymentService | http://localhost:5290 | `PaymentService/src/PaymentService.Api/Properties/launchSettings.json` |
+
+La URL que usa el e-commerce para llamar al PaymentService está en `src/tienda.WebApi/appsettings.json`:
+
+```json
+"Services": {
+  "Payment": "http://localhost:5290/"
+}
 ```
 
-La API quedará disponible en:
-- HTTP: `http://localhost:5227`
-- HTTPS: `https://localhost:7227`
-
-### 5. Explorar con Swagger
-
-Abre en el navegador:
-
-```
-http://localhost:5227/swagger
-```
+> Si se cambia el puerto del PaymentService, hay que actualizar también este valor; si no, el e-commerce no lo encuentra y responde 503.
 
 ---
 
-## Autenticación y roles
+## Usuario Admin de prueba
 
-El sistema maneja **dos roles**:
+Al arrancar, el e-commerce crea automáticamente un usuario **Admin** (si todavía no existe), con los datos de la sección `SeedAdmin` de `appsettings.json`:
 
-| Rol        | Valor | Permisos                                      |
-|------------|-------|-----------------------------------------------|
-| `Admin`    | 1     | Puede crear productos + ver productos         |
-| `Customer` | 2     | Solo puede ver productos                      |
+| Email | Contraseña | Rol |
+|---|---|---|
+| `admin@tienda.com` | `Admin123!` | Admin |
 
-### Flujo de autenticación
+Los usuarios creados con `POST /api/Auth/register` siempre son **Customer**: nadie puede registrarse como Admin desde la API.
 
-1. **Registrar un usuario** → `POST /api/auth/register`
-2. **Iniciar sesión** → `POST /api/auth/login` → obtenés el token JWT
-3. **Usar el token** → en Swagger hacé clic en **Authorize** e ingresá: `Bearer {tu_token}`
+---
+
+## Regla de negocio del PaymentService
+
+> **Se aprueban los pagos de hasta $100.000 inclusive. Los pagos de más de $100.000 se rechazan.**
+
+- La regla vive en el **dominio**: `Payment.Process()` en `PaymentService.Domain/Entities/Payment.cs`, con la constante `MaxApprovedAmount = 100_000`.
+- Cada pago aprobado o rechazado recibe un `transactionId` (por ejemplo `TX-9F3C2A1B`).
+- **Idempotencia:** si llega dos veces el pago de la misma orden (por ejemplo, por un reintento), se devuelve el resultado ya registrado y no se cobra de nuevo.
+- **Almacenamiento en memoria:** el PaymentService no usa base de datos; guarda los pagos en un `ConcurrentDictionary` registrado como **Singleton**. Los pagos se pierden al reiniciar el servicio. La consigna lo permite para un servicio simple.
+
+### Contrato HTTP entre los servicios
+
+```http
+POST http://localhost:5290/api/payments/process
+Content-Type: application/json
+
+{ "orderId": "a1b2...", "amount": 45000 }
+```
+
+Respuesta:
+
+```json
+{ "orderId": "a1b2...", "amount": 45000, "status": "Approved", "transactionId": "TX-9F3C2A1B" }
+```
+
+Con `"amount": 150000` → `"status": "Rejected"`.
+
+---
+
+## Comunicación entre servicios
+
+- **`HttpClient` con `IHttpClientFactory`** (typed client): `AddHttpClient<IPaymentClient, PaymentClient>` en `tienda.Infrastructure/InfrastructureServiceRegistration.cs`. No se instancia `HttpClient` con `new`.
+- **URL en configuración**: `BaseAddress` sale de `Services:Payment` en `appsettings.json`.
+- **Timeout**: 10 segundos.
+- **Contratos**: DTOs propios (`ProcessPaymentRequest` y `ProcessPaymentResponse` en `tienda.Infrastructure/ExternalServices/PaymentContracts.cs`), serializados con `System.Text.Json`. No se exponen entidades de dominio.
+- **Capas**: Application solo conoce la interfaz `IPaymentClient`; la implementación con HTTP (`PaymentClient`) está en Infrastructure.
+
+### Decisión: la llamada entre servicios va sin token
+
+El PaymentService es un servicio **interno**: solo lo llama el e-commerce, no los clientes finales. La seguridad está en la **puerta de entrada**: para confirmar una orden, el cliente tiene que estar autenticado con JWT en el e-commerce, y solo puede confirmar sus propias órdenes. En un entorno real, el PaymentService no estaría expuesto a internet (red interna) o se protegería con un token propio entre servicios.
+
+### Qué pasa si el PaymentService no responde
+
+Si el PaymentService está apagado, la URL es incorrecta o tarda más de 10 segundos:
+
+- `PaymentClient` captura el error (`try/catch`) y lanza `ServiceUnavailableException`.
+- El cliente recibe **503 Service Unavailable** con el mensaje: *"El servicio de pagos no está disponible. La orden sigue pendiente; intentá confirmarla más tarde."*
+- La orden **queda en `Pending`**, sin cambios ni stock perdido, y se puede volver a confirmar cuando el servicio vuelva.
+
+---
+
+## Estados de la orden
+
+```
+            ┌──── pago aprobado ────→  Paid
+Pending ────┤
+            └──── pago rechazado ───→  PaymentRejected  (se devuelve el stock)
+```
+
+- Al **crear** la orden se descuenta el stock de cada producto (regla en `Order.AddItem`).
+- Solo se puede confirmar una orden `Pending`; confirmar otra vez una orden ya procesada devuelve **422**.
+- Cada ítem guarda el precio y el nombre del producto **al momento de la compra**, así el historial no cambia si después cambia el producto.
+
+---
+
+## Reproducir el flujo completo (Swagger)
+
+Con los dos servicios levantados, en http://localhost:5284/swagger:
+
+1. **Login** → `POST /api/Auth/login` (por ejemplo, con el Admin). Copiar el `token`.
+2. **Authorize** (botón arriba a la derecha) → escribir `Bearer {token}`.
+3. **Crear un producto** (solo Admin) → `POST /api/Productos`:
+   ```json
+   { "nombre": "Mouse Logitech", "descripcion": "Mouse inalámbrico", "precio": 15000, "stock": 20 }
+   ```
+4. **Crear una orden** → `POST /api/Ordenes` con el id del producto:
+   ```json
+   { "items": [ { "productoId": "ID-DEL-PRODUCTO", "cantidad": 2 } ] }
+   ```
+   La orden queda `Pending`, con total $30.000.
+5. **Confirmar la orden** → `POST /api/Ordenes/{id}/confirmar` → estado **`Paid`** con `transaccionId`.
+6. **Caso rechazado**: crear una orden de 7 unidades ($105.000) y confirmarla → **`PaymentRejected`**, y el stock del producto vuelve a su valor anterior.
+7. **Caso de fallo**: apagar el PaymentService (Ctrl+C), crear una orden y confirmarla → **503**; la orden sigue `Pending`. Levantar el servicio y confirmarla de nuevo → `Paid`.
 
 ---
 
 ## Endpoints
 
-### Autenticación (públicos)
+### E-commerce (http://localhost:5284)
 
-#### Registrar usuario
-```http
-POST /api/auth/register
-Content-Type: application/json
+| Método | Endpoint | Acceso | Tipo |
+|---|---|---|---|
+| POST | `/api/Auth/register` | Público | Command |
+| POST | `/api/Auth/login` | Público | Command |
+| GET | `/api/Productos` | Autenticado | Query |
+| GET | `/api/Productos/{id}` | Autenticado | Query |
+| POST | `/api/Productos` | **Solo Admin** | Command |
+| POST | `/api/Ordenes` | Autenticado | Command |
+| POST | `/api/Ordenes/{id}/confirmar` | Autenticado (dueño de la orden) | Command |
+| GET | `/api/Ordenes/{id}` | Autenticado (dueño de la orden) | Query |
+| GET | `/api/Ordenes/mis-ordenes` | Autenticado | Query |
 
-{
-  "firstName": "Juan",
-  "lastName": "Pérez",
-  "email": "juan@example.com",
-  "password": "password123"
-}
-```
+### PaymentService (http://localhost:5290)
 
-**Respuesta:**
-```json
-{
-  "token": "eyJhbGci...",
-  "email": "juan@example.com",
-  "fullName": "Juan Pérez",
-  "role": "Customer",
-  "expiresAt": "2024-01-01T01:00:00Z"
-}
-```
+| Método | Endpoint | Tipo |
+|---|---|---|
+| POST | `/api/payments/process` | Command |
+| GET | `/api/payments/{orderId}` | Query |
 
-> Los usuarios registrados tienen rol **Customer** por defecto.
+### Códigos de error
 
-#### Iniciar sesión
-```http
-POST /api/auth/login
-Content-Type: application/json
+Los errores se manejan en un único `GlobalExceptionHandler` (`IExceptionHandler`) y se responden en formato **ProblemDetails** (RFC 7807).
 
-{
-  "email": "juan@example.com",
-  "password": "password123"
-}
-```
+| Código | Cuándo |
+|---|---|
+| 400 | Datos inválidos (FluentValidation) |
+| 401 | Sin token, token inválido o credenciales incorrectas |
+| 403 | Token válido pero sin el rol necesario |
+| 404 | Recurso inexistente (o una orden de otro usuario) |
+| 409 | Email ya registrado |
+| 422 | Regla de negocio violada (stock insuficiente, orden ya procesada) |
+| 503 | PaymentService no disponible |
 
 ---
 
-### Productos (rutas protegidas — requieren JWT)
+## Arquitectura
 
-#### Obtener todos los productos
-```http
-GET /api/productos
-Authorization: Bearer {token}
-```
+Los **dos servicios** siguen Clean Architecture con las mismas cuatro capas y CQRS con MediatR.
 
-Disponible para: `Admin` y `Customer`
+| Capa | Responsabilidad | Depende de |
+|---|---|---|
+| **Domain** | Entidades, Value Objects, excepciones y reglas de negocio | Nada |
+| **Application** | Commands, Queries y Handlers (MediatR), validadores, DTOs, interfaces (repositorios, `IPaymentClient`) | Domain |
+| **Infrastructure** | Implementaciones: EF Core, repositorios, JWT, BCrypt, `PaymentClient` (e-commerce); repositorio en memoria (PaymentService) | Application, Domain |
+| **Api / WebApi** | Controllers, `GlobalExceptionHandler`, `Program.cs` | Application, Infrastructure |
 
-#### Obtener producto por ID
-```http
-GET /api/productos/{id}
-Authorization: Bearer {token}
-```
+Patrones utilizados:
 
-Disponible para: `Admin` y `Customer`
-
-#### Crear producto
-```http
-POST /api/productos
-Authorization: Bearer {token}   ← debe ser token de Admin
-Content-Type: application/json
-
-{
-  "nombre": "Laptop HP",
-  "descripcion": "Laptop 15 pulgadas",
-  "precio": 999.99,
-  "stock": 10
-}
-```
-
-Disponible para: solo **Admin**
-
----
-
-## Casos de uso implementados
-
-| # | Caso de uso              | Tipo    | Rol requerido     | Endpoint                    |
-|---|--------------------------|---------|-------------------|-----------------------------|
-| 1 | Registrar usuario        | Command | Público           | `POST /api/auth/register`   |
-| 2 | Iniciar sesión           | Command | Público           | `POST /api/auth/login`      |
-| 3 | Obtener todos los productos | Query | Auth (Admin/Customer) | `GET /api/productos`   |
-| 4 | Obtener producto por ID  | Query   | Auth (Admin/Customer) | `GET /api/productos/{id}` |
-| 5 | Crear producto           | Command | Solo Admin        | `POST /api/productos`       |
-
----
-
-## Arquitectura del proyecto
-
-```
-tienda/
-├── src/
-│   ├── tienda.Domain/          # Entidades, Value Objects, Excepciones, Enums
-│   ├── tienda.Application/     # CQRS (Commands/Queries), Validadores, Contratos
-│   ├── tienda.Infrastructure/  # EF Core (SQLite), JWT, BCrypt, Repositorios
-│   └── tienda.WebApi/          # Controllers, Middleware, Program.cs
-└── tienda.sln
-```
-
-### Patrones utilizados
-- **Clean Architecture** — separación en 4 capas
-- **CQRS** con MediatR — Commands y Queries separados
-- **Repository Pattern** — abstracción del acceso a datos
-- **Value Objects** — `Email` y `Money` con validaciones encapsuladas
-- **Pipeline Behavior** — validación automática con FluentValidation
-
----
-
-## Recrear la migración (si es necesario)
-
-```bash
-# Eliminar migración existente
-dotnet ef migrations remove \
-  --project src/tienda.Infrastructure \
-  --startup-project src/tienda.WebApi
-
-# Crear nueva migración
-dotnet ef migrations add InitialCreate \
-  --project src/tienda.Infrastructure \
-  --startup-project src/tienda.WebApi \
-  --output-dir Persistence/Migrations
-
-# Aplicar a la base de datos
-dotnet ef database update \
-  --project src/tienda.Infrastructure \
-  --startup-project src/tienda.WebApi
-```
+- **Clean Architecture** — regla de dependencia: Domain no depende de nada; Application no depende de Infrastructure.
+- **CQRS con MediatR** — Commands y Queries separados, con un `ValidationBehavior` (FluentValidation) en el pipeline.
+- **Repository Pattern** — interfaces en Application, implementaciones en Infrastructure.
+- **Value Objects** — `Email` y `Money` (e-commerce); `Money` (PaymentService).
+- **Manejo global de errores** — `GlobalExceptionHandler` con ProblemDetails.
 
 ---
 
 ## Tecnologías
 
 | Tecnología | Versión | Uso |
-|------------|---------|-----|
-| .NET | 8.0 | Framework base |
-| Entity Framework Core | 8.0.11 | ORM + migraciones |
-| SQLite | — | Base de datos |
-| MediatR | 14.1.0 | CQRS / mediador |
-| FluentValidation | 12.1.1 | Validación de comandos |
+|---|---|---|
+| .NET | 8.0 | Framework base (ambos servicios) |
+| Entity Framework Core (+ Sqlite, Design, Tools) | 8.0.11 | ORM y migraciones (e-commerce) |
+| SQLite | — | Base de datos (e-commerce) |
+| MediatR | 14.1.0 | CQRS (ambos servicios) |
+| FluentValidation | 12.1.1 | Validación (ambos servicios) |
 | BCrypt.Net-Next | 4.2.0 | Hash de contraseñas |
-| JWT Bearer | 8.0.0 | Autenticación |
-| Swashbuckle | 6.6.2 | Documentación Swagger |
+| Microsoft.AspNetCore.Authentication.JwtBearer | 8.0.0 | Autenticación JWT |
+| Microsoft.Extensions.Http | 8.0.1 | `IHttpClientFactory` |
+| Swashbuckle | — | Swagger (ambos servicios) |

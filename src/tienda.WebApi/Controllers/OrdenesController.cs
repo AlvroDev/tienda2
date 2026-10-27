@@ -6,6 +6,7 @@ using tienda.Application.Features.Ordenes.Commands.CrearOrden;
 using tienda.Application.Features.Ordenes.Queries.ObtenerMisOrdenes;
 using tienda.Application.Features.Ordenes.Queries.ObtenerOrdenPorId;
 using tienda.WebApi.Controllers.Requests;
+using tienda.Application.Features.Ordenes.Commands.ConfirmarOrden;
 
 namespace tienda.WebApi.Controllers;
 
@@ -35,6 +36,16 @@ public class OrdenesController : ControllerBase
         var id = await _mediator.Send(command, ct);
 
         return CreatedAtAction(nameof(ObtenerPorId), new { id }, new { id });
+    }
+
+    /// <summary>
+    /// Confirma una orden: la manda a pagar al PaymentService y actualiza su estado.
+    /// </summary>
+    [HttpPost("{id:guid}/confirmar")]
+    public async Task<IActionResult> Confirmar(Guid id, CancellationToken ct)
+    {
+        var orden = await _mediator.Send(new ConfirmarOrdenCommand(id, ObtenerUserId()), ct);
+        return Ok(orden);
     }
 
     /// <summary>

@@ -5,6 +5,8 @@ using tienda.Application.Contracts.Authentication;
 using tienda.Application.Settings;
 using tienda.Infrastructure.Repositories;
 using tienda.Infrastructure.Authentication;
+using tienda.Application.Contracts.Payments;
+using tienda.Infrastructure.ExternalServices;
 
 namespace tienda.Infrastructure;
 
@@ -28,6 +30,14 @@ public static class InfrastructureServiceRegistration
         services.AddScoped<IAuthService, JwtAuthService>();
         services.AddScoped<IPasswordHasher, BcryptPasswordHasher>();
         services.AddScoped<IOrderRepository, OrderRepository>();
+
+        // Typed client con IHttpClientFactory. La URL sale de appsettings, no está hardcodeada
+        services.AddHttpClient<IPaymentClient, PaymentClient>(client =>
+        {
+            client.BaseAddress = new Uri(configuration["Services:Payment"]
+                ?? throw new InvalidOperationException("Falta configurar Services:Payment en appsettings."));
+            client.Timeout = TimeSpan.FromSeconds(10);
+        });
 
         return services;
     }

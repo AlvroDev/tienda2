@@ -38,4 +38,8 @@ public class OrderRepository : IOrderRepository
         await _context.Orders.AddAsync(order, ct);
         await _context.SaveChangesAsync(ct);
     }
+    public async Task GuardarCambiosAsync(CancellationToken ct = default)
+    {
+        await _context.SaveChangesAsync(ct);
+    }
 }

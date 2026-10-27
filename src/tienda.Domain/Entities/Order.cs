@@ -66,7 +66,7 @@ public class Order : BaseEntity
         Status = OrderStatus.PaymentRejected;
     }
 
-    private void EnsurePending()
+    public void EnsurePending()
     {
         if (Status != OrderStatus.Pending)
             throw new DomainException($"La orden ya fue procesada (estado: {Status}).");
