@@ -3,11 +3,13 @@ using Microsoft.AspNetCore.Mvc;
 using PaymentService.Api.Controllers.Requests;
 using PaymentService.Application.Features.Payments.Commands.ProcessPayment;
 using PaymentService.Application.Features.Payments.Queries.GetPaymentByOrderId;
+using PaymentService.Api.Filters;
 
 namespace PaymentService.Api.Controllers;
 
 [ApiController]
 [Route("api/payments")]
+[ServiceFilter(typeof(ApiKeyAuthFilter))]
 public class PaymentsController : ControllerBase
 {
     private readonly IMediator _mediator;

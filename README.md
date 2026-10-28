@@ -57,7 +57,7 @@ cd PaymentService
 dotnet run --project src/PaymentService.Api --launch-profile http
 ```
 
-Swagger: http://localhost:5290/swagger
+Swagger: http://localhost:5290/swagger — para probarlo solo, primero **Authorize** con la API key `payments-dev-key-2026` (ver [Seguridad entre servicios](#decisión-la-llamada-entre-servicios-se-protege-con-una-api-key)).
 
 **Terminal 2 — E-commerce** (puerto **5284**):
 
@@ -78,15 +78,16 @@ El e-commerce usa **SQLite**. El archivo `tienda.db` **no se versiona**: se crea
 | E-commerce | http://localhost:5284 | `src/tienda.WebApi/Properties/launchSettings.json` |
 | PaymentService | http://localhost:5290 | `PaymentService/src/PaymentService.Api/Properties/launchSettings.json` |
 
-La URL que usa el e-commerce para llamar al PaymentService está en `src/tienda.WebApi/appsettings.json`:
+La URL y la API key que usa el e-commerce para llamar al PaymentService están en `src/tienda.WebApi/appsettings.json`:
 
 ```json
 "Services": {
-  "Payment": "http://localhost:5290/"
+  "Payment": "http://localhost:5290/",
+  "PaymentApiKey": "payments-dev-key-2026"
 }
 ```
 
-> Si se cambia el puerto del PaymentService, hay que actualizar también este valor; si no, el e-commerce no lo encuentra y responde 503.
+> Si se cambia el puerto del PaymentService, hay que actualizar también `Payment`; si no, el e-commerce no lo encuentra y responde 503. Lo mismo con `PaymentApiKey`: tiene que coincidir con `ServiceAuth:ApiKey` del PaymentService.
 
 ---
 
@@ -116,6 +117,7 @@ Los usuarios creados con `POST /api/Auth/register` siempre son **Customer**: nad
 ```http
 POST http://localhost:5290/api/payments/process
 Content-Type: application/json
+X-Api-Key: payments-dev-key-2026
 
 { "orderId": "a1b2...", "amount": 45000 }
 ```
@@ -135,6 +137,7 @@ Con `"amount": 150000` → `"status": "Rejected"`.
 - **`HttpClient` con `IHttpClientFactory`** (typed client): `AddHttpClient<IPaymentClient, PaymentClient>` en `tienda.Infrastructure/InfrastructureServiceRegistration.cs`. No se instancia `HttpClient` con `new`.
 - **URL en configuración**: `BaseAddress` sale de `Services:Payment` en `appsettings.json`.
 - **Timeout**: 10 segundos.
+- **API key**: cada llamada lleva el header `X-Api-Key`, que se agrega automáticamente en el `AddHttpClient` (`DefaultRequestHeaders`).
 - **Contratos**: DTOs propios (`ProcessPaymentRequest` y `ProcessPaymentResponse` en `tienda.Infrastructure/ExternalServices/PaymentContracts.cs`), serializados con `System.Text.Json`. No se exponen entidades de dominio.
 - **Capas**: Application solo conoce la interfaz `IPaymentClient`; la implementación con HTTP (`PaymentClient`) está en Infrastructure.
 

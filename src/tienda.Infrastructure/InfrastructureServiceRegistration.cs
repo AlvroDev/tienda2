@@ -37,6 +37,9 @@ public static class InfrastructureServiceRegistration
             client.BaseAddress = new Uri(configuration["Services:Payment"]
                 ?? throw new InvalidOperationException("Falta configurar Services:Payment en appsettings."));
             client.Timeout = TimeSpan.FromSeconds(10);
+            // Todas las llamadas al PaymentService llevan la clave en el header X-Api-Key
+            client.DefaultRequestHeaders.Add("X-Api-Key", configuration["Services:PaymentApiKey"]
+                ?? throw new InvalidOperationException("Falta configurar Services:PaymentApiKey en appsettings."));
         });
 
         return services;
