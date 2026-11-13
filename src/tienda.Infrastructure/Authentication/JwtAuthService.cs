@@ -38,24 +38,4 @@ public class JwtAuthService : IAuthService
 
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
-
-    public ClaimsPrincipal ValidateToken(string token)
-    {
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.SecretKey));
-
-        var tokenHandler = new JwtSecurityTokenHandler();
-        var principal = tokenHandler.ValidateToken(token, new TokenValidationParameters
-        {
-            ValidateIssuerSigningKey = true,
-            IssuerSigningKey = key,
-            ValidateIssuer = true,
-            ValidIssuer = _jwtSettings.Issuer,
-            ValidateAudience = true,
-            ValidAudience = _jwtSettings.Audience,
-            ValidateLifetime = true,
-            ClockSkew = TimeSpan.Zero
-        }, out SecurityToken validatedToken);
-
-        return principal;
-    }
 }

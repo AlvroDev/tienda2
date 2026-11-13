@@ -2,6 +2,7 @@ using MediatR;
 using tienda.Application.Contracts.Persistence;
 using tienda.Application.Contracts.Authentication;
 using tienda.Application.Common.Exceptions;
+using tienda.Application.Settings;
 
 namespace tienda.Application.Features.Authentication.Commands.Login;
 
@@ -10,12 +11,15 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, AuthResponse>
     private readonly IUserRepository _userRepository;
     private readonly IAuthService _authService;
     private readonly IPasswordHasher _passwordHasher;
+    private readonly JwtSettings _jwtSettings;
 
-    public LoginCommandHandler(IUserRepository userRepository, IAuthService authService, IPasswordHasher passwordHasher)
+    public LoginCommandHandler(IUserRepository userRepository, IAuthService authService,
+                               IPasswordHasher passwordHasher, JwtSettings jwtSettings)
     {
         _userRepository = userRepository;
         _authService = authService;
         _passwordHasher = passwordHasher;
+        _jwtSettings = jwtSettings;
     }
 
     public async Task<AuthResponse> Handle(LoginCommand request, CancellationToken cancellationToken)
@@ -35,7 +39,7 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, AuthResponse>
             throw new InvalidCredentialsException("El usuario está desactivado.");
 
         // Generar JWT
-        var expiresAt = DateTime.UtcNow.AddMinutes(60);
+        var expiresAt = DateTime.UtcNow.AddMinutes(_jwtSettings.ExpirationMinutes);
         var token = _authService.GenerateToken(
             user.Id.ToString(),
             user.Email.Value,
